@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buku Digital Saving RKAM &bull; Hemat, Manfaat</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+          colors: {
+            brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+  
+  <!-- Header Navigasi -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-2.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-md">
+          <i class="fa-solid fa-book-bookmark text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 leading-none">
+            Buku Digital Saving <span class="text-emerald-600">RKAM</span>
+          </h1>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Hemat, Manfaat.</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <input type="month" id="globalMonthFilter" class="bg-slate-100 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl px-3 py-2 text-slate-700 outline-none">
+        <button id="btnOpenModal" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-sm transition">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Catat Transaksi</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 space-y-6">
+    
+    <!-- Kartu Ringkasan -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-bold text-slate-500 uppercase">Saldo Saving Tersedia</span>
+        <h2 id="totalBalance" class="text-2xl sm:text-3xl font-extrabold text-slate-900 my-2">Rp 0</h2>
+        <p class="text-xs text-slate-400" id="balanceStatusNote">Total saving dikurangi pengeluaran</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-bold text-emerald-600 uppercase">Total Pemasukan Saving</span>
+        <h2 id="totalIncome" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 my-2">Rp 0</h2>
+        <p class="text-xs text-slate-400" id="incomeCountNote">0 transaksi</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+        <span class="text-xs font-bold text-rose-600 uppercase">Total Pengeluaran</span>
+        <h2 id="totalExpense" class="text-2xl sm:text-3xl font-extrabold text-rose-600 my-2">Rp 0</h2>
+        <p class="text-xs text-slate-400" id="expenseCountNote">0 transaksi</p>
+      </div>
+    </section>
+
+    <!-- Grafik & Plafon -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+        <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-emerald-600"></i> Alokasi Pengeluaran
+        </h3>
+        <div class="relative flex-1 flex items-center justify-center min-h-[230px]">
+          <canvas id="categoryChart"></canvas>
+          <div id="chartEmptyNotice" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 text-xs">
+            <i class="fa-solid fa-receipt text-3xl mb-2 text-slate-300"></i> Belum ada pengeluaran
+          </div>
+        </div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-slate-800 text-sm">Plafon Anggaran Pengeluaran</h3>
+          <button id="btnOpenBudget" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl">Atur Plafon</button>
+        </div>
+        <div id="budgetContainer" class="space-y-4 flex-1 overflow-y-auto max-h-[250px]"></div>
+      </div>
+    </section>
+
+    <!-- Tabel Riwayat -->
+    <section class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <h3 class="font-bold text-slate-800 text-base">Riwayat Transaksi Saving RKAM</h3>
+        <button id="btnExportCSV" class="text-xs font-semibold px-3 py-2 border border-slate-200 rounded-xl text-slate-700">Unduh CSV</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <select id="filterMember" class="text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700">
+          <option value="ALL">Semua Sumber Saving</option>
+          <option value="Saving Kurikulum">📚 Saving Kurikulum</option>
+          <option value="Saving Kesiswaan">🧑‍🎓 Saving Kesiswaan</option>
+          <option value="Saving Humas">🤝 Saving Humas</option>
+        </select>
+        <select id="filterCategory" class="text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700">
+          <option value="ALL">Semua Kategori</option>
+        </select>
+        <select id="filterType" class="text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700">
+          <option value="ALL">Semua Jenis</option>
+          <option value="INCOME">Pemasukan Saja (+)</option>
+          <option value="EXPENSE">Pengeluaran Saja (-)</option>
+        </select>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-slate-100 text-slate-400 uppercase text-[11px] font-semibold">
+              <th class="py-3 px-2">Tanggal</th>
+              <th class="py-3 px-2">Keterangan & Kategori</th>
+              <th class="py-3 px-2">Sumber</th>
+              <th class="py-3 px-2 text-center">Nota</th>
+              <th class="py-3 px-2 text-right">Nominal</th>
+              <th class="py-3 px-2 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="transactionList" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <div id="emptyTransactionNotice" class="hidden py-12 text-center text-slate-400 text-xs">Belum ada transaksi di periode ini.</div>
+    </section>
+  </main>
+
+  <!-- MODAL TRANSAKSI -->
+  <div id="txModal" class="fixed inset-0 z-50 bg-slate-900/50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <h3 id="modalTxTitle" class="font-bold text-slate-800 text-base">Catat Transaksi</h3>
+        <button type="button" id="btnCloseModal" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">&times;</button>
+      </div>
+      <form id="txForm" class="p-5 space-y-4 overflow-y-auto flex-1">
+        <input type="hidden" id="txId">
+        <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-xl">
+          <button type="button" id="btnTypeExpense" class="py-2 text-xs font-bold rounded-lg text-rose-600 bg-white shadow-xs">Pengeluaran</button>
+          <button type="button" id="btnTypeIncome" class="py-2 text-xs font-semibold rounded-lg text-slate-500">Pemasukan</button>
+        </div>
+        <input type="hidden" id="txType" value="EXPENSE">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nominal (Rp)</label>
+          <input type="number" id="txAmount" required min="1" placeholder="0" class="w-full px-4 py-2.5 text-base font-bold bg-slate-50 border border-slate-200 rounded-xl">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal</label>
+            <input type="date" id="txDate" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kategori</label>
+            <select id="txCategory" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"></select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Sumber Saving</label>
+          <select id="txMember" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl">
+            <option value="Saving Kurikulum">Saving Kurikulum</option>
+            <option value="Saving Kesiswaan">Saving Kesiswaan</option>
+            <option value="Saving Humas">Saving Humas</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan / Detil</label>
+          <input type="text" id="txDescription" required placeholder="Contoh: Beli alat tulis..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Unggah Nota (Foto)</label>
+          <input type="file" id="txReceipt" accept="image/*" class="w-full text-xs text-slate-500">
+          <input type="hidden" id="txReceiptBase64">
+          <div id="receiptPreviewContainer" class="hidden mt-2 flex items-center gap-2">
+            <img id="receiptThumbnail" src="" class="w-10 h-10 object-cover rounded border">
+            <button type="button" id="btnClearReceipt" class="text-xs text-rose-500 underline">Hapus Foto</button>
+          </div>
+        </div>
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" id="btnCancelModal" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl">Batal</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-xl">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL LIHAT NOTA -->
+  <div id="imageModal" class="fixed inset-0 z-50 bg-slate-900/80 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-4 relative space-y-3">
+      <div class="flex justify-between border-b pb-2">
+        <h4 class="font-bold text-sm">Bukti Nota</h4>
+        <button type="button" id="btnCloseImage" class="text-lg font-bold">&times;</button>
+      </div>
+      <div class="flex justify-center bg-slate-100 rounded-xl overflow-hidden max-h-[70vh]">
+        <img id="modalFullImage" class="object-contain max-h-[70vh]">
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PLAFON -->
+  <div id="budgetModal" class="fixed inset-0 z-50 bg-slate-900/50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border">
+      <div class="flex justify-between px-5 py-4 border-b bg-slate-50">
+        <h3 class="font-bold text-base">Atur Plafon Anggaran</h3>
+        <button type="button" id="btnCloseBudget" class="text-lg font-bold">&times;</button>
+      </div>
+      <div class="p-5 max-h-[60vh] overflow-y-auto space-y-3" id="budgetInputsList"></div>
+      <div class="px-5 py-3 border-t bg-slate-50 flex justify-end gap-2">
+        <button type="button" id="btnCancelBudget" class="px-4 py-2 text-xs font-semibold bg-slate-200 rounded-xl">Tutup</button>
+        <button type="button" id="btnSaveBudget" class="px-5 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-xl">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT UTAMA -->
+  <script>
+    const EXPENSE_CATEGORIES = [
+      { id: 'Pengadaan Barang', name: 'Pengadaan Barang', icon: 'fa-boxes-stacked', color: '#3b82f6' },
+      { id: 'Konsumsi Rapat', name: 'Konsumsi Rapat', icon: 'fa-utensils', color: '#10b981' },
+      { id: 'Transportasi', name: 'Transportasi', icon: 'fa-car', color: '#8b5cf6' },
+      { id: 'Lain-lain', name: 'Lain-lain', icon: 'fa-ellipsis', color: '#f59e0b' }
+    ];
+
+    const INCOME_CATEGORIES = [
+      { id: 'Saving Kurikulum', name: 'Saving Kurikulum', icon: 'fa-book-open', color: '#059669' },
+      { id: 'Saving Kesiswaan', name: 'Saving Kesiswaan', icon: 'fa-user-graduate', color: '#0284c7' },
+      { id: 'Saving Humas', name: 'Saving Humas', icon: 'fa-handshake', color: '#7c3aed' }
+    ];
+
+    let transactions = JSON.parse(localStorage.getItem('rkam_saving_transactions')) || [
+      { id: 'tx_1', type: 'INCOME', amount: 5000000, date: new Date().toISOString().slice(0, 7) + '-01', category: 'Saving Kurikulum', member: 'Saving Kurikulum', description: 'Alokasi awal', receipt: '' }
+    ];
+
+    let budgets = JSON.parse(localStorage.getItem('rkam_saving_budgets')) || {
+      'Pengadaan Barang': 2000000, 'Konsumsi Rapat': 1000000, 'Transportasi': 1000000, 'Lain-lain': 500000
+    };
+
+    let categoryChart = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('globalMonthFilter').value = new Date().toISOString().slice(0, 7);
+      document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
+
+      // Event listener utama yang anti-gagal di Tablet
+      document.getElementById('btnOpenModal').onclick = () => openModal();
+      document.getElementById('btnCloseModal').onclick = () => closeModal();
+      document.getElementById('btnCancelModal').onclick = () => closeModal();
+      
+      document.getElementById('btnOpenBudget').onclick = () => openBudgetModal();
+      document.getElementById('btnCloseBudget').onclick = () => closeBudgetModal();
+      document.getElementById('btnCancelBudget').onclick = () => closeBudgetModal();
+      document.getElementById('btnSaveBudget').onclick = () => saveBudgets();
+
+      document.getElementById('btnCloseImage').onclick = () => document.getElementById('imageModal').style.display = 'none';
+      document.getElementById('btnExportCSV').onclick = () => exportToCSV();
+
+      document.getElementById('globalMonthFilter').onchange = refreshDashboard;
+      document.getElementById('filterMember').onchange = refreshDashboard;
+      document.getElementById('filterCategory').onchange = refreshDashboard;
+      document.getElementById('filterType').onchange = refreshDashboard;
+
+      document.getElementById('btnTypeExpense').onclick = () => setTxType('EXPENSE');
+      document.getElementById('btnTypeIncome').onclick = () => setTxType('INCOME');
+
+      document.getElementById('txReceipt').onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            document.getElementById('txReceiptBase64').value = evt.target.result;
+            document.getElementById('receiptThumbnail').src = evt.target.result;
+            document.getElementById('receiptPreviewContainer').classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      document.getElementById('btnClearReceipt').onclick = () => {
+        document.getElementById('txReceipt').value = '';
+        document.getElementById('txReceiptBase64').value = '';
+        document.getElementById('receiptPreviewContainer').classList.add('hidden');
+      };
+
+      document.getElementById('txForm').onsubmit = function(e) {
+        e.preventDefault();
+        const id = document.getElementById('txId').value;
+        const type = document.getElementById('txType').value;
+        const amount = parseFloat(document.getElementById('txAmount').value) || 0;
+        const date = document.getElementById('txDate').value;
+        const category = document.getElementById('txCategory').value;
+        const member = document.getElementById('txMember').value;
+        const description = document.getElementById('txDescription').value.trim();
+        const receipt = document.getElementById('txReceiptBase64').value;
+
+        if (amount <= 0) return;
+
+        if (id) {
+          const idx = transactions.findIndex(t => t.id === id);
+          if (idx !== -1) transactions[idx] = { id, type, amount, date, category, member, description, receipt };
+        } else {
+          transactions.unshift({ id: 'tx_' + Date.now(), type, amount, date, category, member, description, receipt });
+        }
+
+        localStorage.setItem('rkam_saving_transactions', JSON.stringify(transactions));
+        closeModal();
+        refreshDashboard();
+      };
+
+      populateCategoryFilters();
+      refreshDashboard();
+    });
+
+    function openModal(editId = null) {
+      document.getElementById('txForm').reset();
+      document.getElementById('receiptPreviewContainer').classList.add('hidden');
+      document.getElementById('txReceiptBase64').value = '';
+      document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
+      
+      if (editId) {
+        const tx = transactions.find(t => t.id === editId);
+        if (tx) {
+          document.getElementById('modalTxTitle').innerText = 'Edit Transaksi';
+          document.getElementById('txId').value = tx.id;
+          document.getElementById('txAmount').value = tx.amount;
+          document.getElementById('txDate').value = tx.date;
+          document.getElementById('txMember').value = tx.member;
+          document.getElementById('txDescription').value = tx.description;
+          setTxType(tx.type);
+          document.getElementById('txCategory').value = tx.category;
+          if (tx.receipt) {
+            document.getElementById('txReceiptBase64').value = tx.receipt;
+            document.getElementById('receiptThumbnail').src = tx.receipt;
+            document.getElementById('receiptPreviewContainer').classList.remove('hidden');
+          }
+        }
+      } else {
+        document.getElementById('modalTxTitle').innerText = 'Catat Transaksi Baru';
+        document.getElementById('txId').value = '';
+        setTxType('EXPENSE');
+      }
+      document.getElementById('txModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('txModal').style.display = 'none';
+    }
+
+    function setTxType(type) {
+      document.getElementById('txType').value = type;
+      const bExp = document.getElementById('btnTypeExpense');
+      const bInc = document.getElementById('btnTypeIncome');
+      const catSel = document.getElementById('txCategory');
+      catSel.innerHTML = '';
+      
+      if (type === 'EXPENSE') {
+        bExp.className = 'py-2 text-xs font-bold rounded-lg text-rose-600 bg-white shadow-xs';
+        bInc.className = 'py-2 text-xs font-semibold rounded-lg text-slate-500';
+        EXPENSE_CATEGORIES.forEach(c => catSel.add(new Option(c.name, c.id)));
+      } else {
+        bInc.className = 'py-2 text-xs font-bold rounded-lg text-emerald-600 bg-white shadow-xs';
+        bExp.className = 'py-2 text-xs font-semibold rounded-lg text-slate-500';
+        INCOME_CATEGORIES.forEach(c => catSel.add(new Option(c.name, c.id)));
+      }
+    }
+
+    function refreshDashboard() {
+      const month = document.getElementById('globalMonthFilter').value;
+      const mFilter = document.getElementById('filterMember').value;
+      const cFilter = document.getElementById('filterCategory').value;
+      const tFilter = document.getElementById('filterType').value;
+
+      const filtered = transactions.filter(t => {
+        return (!month || (t.date && t.date.startsWith(month))) &&
+               (mFilter === 'ALL' || t.member === mFilter) &&
+               (cFilter === 'ALL' || t.category === cFilter) &&
+               (tFilter === 'ALL' || t.type === tFilter);
+      });
+
+      let inc = 0, exp = 0, incCnt = 0, expCnt = 0;
+      transactions.filter(t => !month || (t.date && t.date.startsWith(month))).forEach(t => {
+        if (t.type === 'INCOME') { inc += t.amount; incCnt++; }
+        else { exp += t.amount; expCnt++; }
+      });
+
+      document.getElementById('totalBalance').innerText = formatRupiah(inc - exp);
+      document.getElementById('totalIncome').innerText = formatRupiah(inc);
+      document.getElementById('totalExpense').innerText = formatRupiah(exp);
+      document.getElementById('incomeCountNote').innerText = incCnt + ' transaksi';
+      document.getElementById('expenseCountNote').innerText = expCnt + ' transaksi';
+
+      // Render Table
+      const tbody = document.getElementById('transactionList');
+      const emptyEl = document.getElementById('emptyTransactionNotice');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyEl.style.display = 'block';
+      } else {
+        emptyEl.style.display = 'none';
+        filtered.forEach(tx => {
+          const isExp = tx.type === 'EXPENSE';
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50';
+          tr.innerHTML = `
+            <td class="py-3 px-2 text-slate-500 text-xs">${tx.date}</td>
+            <td class="py-3 px-2">
+              <div class="font-semibold text-slate-800">${escapeHtml(tx.description)}</div>
+              <div class="text-[11px] text-slate-400">${tx.category}</div>
+            </td>
+            <td class="py-3 px-2 text-xs font-medium">${tx.member}</td>
+            <td class="py-3 px-2 text-center">${tx.receipt ? `<button onclick="showImage('${tx.receipt}')" class="text-xs bg-slate-100 px-2 py-1 rounded text-emerald-700 font-medium">Nota</button>` : '-'}</td>
+            <td class="py-3 px-2 text-right font-semibold ${isExp ? 'text-rose-600' : 'text-emerald-600'}">${isExp ? '-' : '+'} ${formatRupiah(tx.amount)}</td>
+            <td class="py-3 px-2 text-center">
+              <button onclick="openModal('${tx.id}')" class="text-slate-400 hover:text-emerald-600 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
+              <button onclick="deleteTx('${tx.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      renderChart(month);
+      renderBudget(month);
+    }
+
+    function showImage(b64) {
+      document.getElementById('modalFullImage').src = b64;
+      document.getElementById('imageModal').style.display = 'flex';
+    }
+
+    function deleteTx(id) {
+      if (confirm("Hapus transaksi ini?")) {
+        transactions = transactions.filter(t => t.id !== id);
+        localStorage.setItem('rkam_saving_transactions', JSON.stringify(transactions));
+        refreshDashboard();
+      }
+    }
+
+    function formatRupiah(num) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function populateCategoryFilters() {
+      const sel = document.getElementById('filterCategory');
+      EXPENSE_CATEGORIES.forEach(c => sel.add(new Option(c.name, c.id)));
+    }
+
+    function openBudgetModal() {
+      const container = document.getElementById('budgetInputsList');
+      container.innerHTML = '';
+      EXPENSE_CATEGORIES.forEach(c => {
+        container.innerHTML += `
+          <div class="flex justify-between items-center text-xs bg-slate-50 p-2.5 rounded-xl border">
+            <span>${c.name}</span>
+            <input type="number" data-cat="${c.id}" value="${budgets[c.id] || 0}" class="budget-input w-36 px-2 py-1.5 border rounded text-right font-semibold">
+          </div>
+        `;
+      });
+      document.getElementById('budgetModal').style.display = 'flex';
+    }
+
+    function closeBudgetModal() {
+      document.getElementById('budgetModal').style.display = 'none';
+    }
+
+    function saveBudgets() {
+      document.querySelectorAll('.budget-input').forEach(inp => {
+        budgets[inp.getAttribute('data-cat')] = parseFloat(inp.value) || 0;
+      });
+      localStorage.setItem('rkam_saving_budgets', JSON.stringify(budgets));
+      closeBudgetModal();
+      refreshDashboard();
+    }
+
+    function renderBudget(month) {
+      const container = document.getElementById('budgetContainer');
+      container.innerHTML = '';
+      const expMap = {};
+      transactions.filter(t => t.type === 'EXPENSE' && (!month || t.date.startsWith(month))).forEach(t => {
+        expMap[t.category] = (expMap[t.category] || 0) + t.amount;
+      });
+
+      Object.keys(budgets).forEach(cat => {
+        const limit = budgets[cat];
+        if (limit > 0) {
+          const spent = expMap[cat] || 0;
+          const pct = Math.min(Math.round((spent / limit) * 100), 100);
+          const isOver = spent > limit;
+          container.innerHTML += `
+            <div class="text-xs">
+              <div class="flex justify-between mb-1 font-medium text-slate-700">
+                <span>${cat}</span>
+                <span>${formatRupiah(spent)} / ${formatRupiah(limit)} <span class="${isOver ? 'text-rose-600 font-bold' : ''}">(${pct}%)</span></span>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="h-2 rounded-full ${isOver ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function renderChart(month) {
+      const expMap = {};
+      transactions.filter(t => t.type === 'EXPENSE' && (!month || t.date.startsWith(month))).forEach(t => {
+        expMap[t.category] = (expMap[t.category] || 0) + t.amount;
+      });
+
+      const labels = Object.keys(expMap);
+      const data = Object.values(expMap);
+      const emptyNotice = document.getElementById('chartEmptyNotice');
+      const canvas = document.getElementById('categoryChart');
+
+      if (labels.length === 0) {
+        if (categoryChart) categoryChart.destroy();
+        emptyNotice.style.display = 'flex';
+        canvas.style.display = 'none';
+        return;
+      }
+      emptyNotice.style.display = 'none';
+      canvas.style.display = 'block';
+
+      if (categoryChart) categoryChart.destroy();
+      categoryChart = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: data, backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+      });
+    }
+
+    function exportToCSV() {
+      const month = document.getElementById('globalMonthFilter').value;
+      const filtered = transactions.filter(t => !month || t.date.startsWith(month));
+      if (filtered.length === 0) { alert("Tidak ada data."); return; }
+
+      let csv = "ID,Tanggal,Jenis,Kategori,Sumber,Catatan,Jumlah\n";
+      filtered.forEach(t => {
+        csv += `"${t.id}","${t.date}","${t.type}","${t.category}","${t.member}","${(t.description||'').replace(/"/g, '""')}","${t.amount}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Saving_RKAM_${month}.csv`;
+      link.click();
+    }
+  </script>
+</body>
+</html>
